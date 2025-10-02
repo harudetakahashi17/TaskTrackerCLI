@@ -165,7 +165,34 @@ namespace TaskTrackerCLI
                 }
                 else if (instruction == "mark")
                 {
+                    string[] splitInputs = inputs.Split(" ");
+                    string strStatus = splitInputs[0];
+                    string strId = splitInputs[1];
 
+                    try
+                    {
+                        int.TryParse(strStatus, out int intStatus);
+                        int.TryParse(strId, out int taskId);
+
+                        Enums.TaskStatus status = GetStatus(intStatus);
+
+                        int idxTask = tasks.FindIndex(x => x.Id == taskId);
+                        if (idxTask == -1) 
+                        {
+                            Console.WriteLine("Task not found!");
+                        }
+                        else
+                        {
+                            tasks[idxTask].Status = status;
+                            tasks[idxTask].UpdatedAt = DateTime.Now;
+                            SaveToFile(tasks, path);
+                            Console.WriteLine($"Task ID: {tasks[idxTask].Id}. Successfully marked as {status.ToString()}!");
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
                 else if (instruction == "help")
                 {
@@ -211,7 +238,7 @@ namespace TaskTrackerCLI
             }
             else
             {
-                Enums.TaskStatus stat = (Enums.TaskStatus)status;
+                Enums.TaskStatus stat = GetStatus(status);
                 foreach (var task in tasks.Where(x => x.Status == stat))
                 {
                     Console.WriteLine($"ID\t\t: {task.Id}");
@@ -220,6 +247,20 @@ namespace TaskTrackerCLI
                     Console.WriteLine("-----------------------------------");
                 }
             }
+        }
+
+        public static Enums.TaskStatus GetStatus(int i)
+        {
+            if (i <= 0)
+                return Enums.TaskStatus.NotAvailable;
+            else if (i == 1)
+                return Enums.TaskStatus.ToDo;
+            else if (i == 2)
+                return Enums.TaskStatus.InProgress;
+            else if (i == 3)
+                return Enums.TaskStatus.Done;
+            else
+                return Enums.TaskStatus.NotAvailable;
         }
 
         public static void ErrorCommand()
